@@ -1,0 +1,102 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                            Optimus Gold         |
+//|                        https://www.forexroboteasy.com            |
+//|                            Developed by Forex Robot Easy Team     |
+//+------------------------------------------------------------------+
+
+// Include necessary libraries and define constants
+#include <Trade\Trade.mqh>
+#include <Indicators\Trend.mqh>
+#define RISK_PERCENT 1
+#define STOP_LOSS 50
+
+// Initialize global variables
+CTrade Trade;
+CTrend Trend;
+
+//+------------------------------------------------------------------+
+//| Custom OnTick function                                          |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+   // Check if market trend is bullish
+   if(Trend.isBullish())
+   {
+      // Generate buy signal
+      double entryPrice = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+      double stopLossPrice = entryPrice - STOP_LOSS * _Point;
+      double lotSize = AccountBalance() * RISK_PERCENT / 100 / (STOP_LOSS * _Point);
+      
+      // Place buy order
+      Trade.Buy(_Symbol, lotSize, entryPrice, stopLossPrice);
+   }
+   // Check if market trend is bearish
+   else if(Trend.isBearish())
+   {
+      // Generate sell signal
+      double entryPrice = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      double stopLossPrice = entryPrice + STOP_LOSS * _Point;
+      double lotSize = AccountBalance() * RISK_PERCENT / 100 / (STOP_LOSS * _Point);
+      
+      // Place sell order
+      Trade.Sell(_Symbol, lotSize, entryPrice, stopLossPrice);
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Custom OnInit function                                          |
+//+------------------------------------------------------------------+
+void OnInit()
+{
+   // Initialize trade and trend objects
+   Trade.SetExpertMagicNumber(123456);
+   Trend.Init();
+   
+   // Set up user-friendly interface
+   ChartEventAdd(CHARTEVENT_CLICK, OnChartClick);
+}
+
+//+------------------------------------------------------------------+
+//| Custom OnChartClick function                                    |
+//+------------------------------------------------------------------+
+void OnChartClick(const int id, const long &lparam, const double &dparam, const string &sparam)
+{
+   // Display real-time market data updates
+   if (id == CHARTEVENT_CLICK && sparam == 'MarketData')
+   {
+      // Get current market price
+      double currentPrice = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+      
+      // Display price on the chart
+      Comment('Current Price: ', currentPrice);
+   }
+}
+
+//+------------------------------------------------------------------+
+//| Custom OnDeinit function                                        |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+   // Clean up resources
+   Trade.Deinit();
+   Trend.Deinit();
+}
+
+//+------------------------------------------------------------------+
+//| Custom OnStart function                                         |
+//+------------------------------------------------------------------+
+void OnStart()
+{
+   // Enable real-time alerts and notifications
+   Alert('Optimus Gold Forex Software is now running!');
+   
+   // Set up backtesting capabilities
+   if (IsTesting())
+   {
+      // Perform backtest analysis
+      // ...
+   }
+}
+
+//+------------------------------------------------------------------+
